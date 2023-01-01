@@ -1,0 +1,62 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+      - name: Run tests
+        run: |
+          python -m pytest test.py
+
+  sonarqube_analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+      - name: Run tests and generate coverage report
+        run: |
+          python -m pytest --cov=app.py --cov-report=xml test.py
+          python -m coverage xml -i
+      - name: Analyze code with SonarQube
+        uses: sonarsource/sonarcloud-github-action@v1
+        with:
+          sonar.projectKey: my-project
+          sonar.organization: my-organization
+          sonar.login: ${{ secrets.SONAR_TOKEN }}
+          sonar.sources: app.py
+          sonar.python.coverage.reportPath: coverage.xml
+
+  build_image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run: |
+          docker build -t myapp .
+
+  push_image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to Docker registry
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      - name: Push image
+        run: |
+          docker push myapp

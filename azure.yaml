@@ -1,0 +1,49 @@
+# Node.js with React
+# Build a Node.js project that uses React.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  - master
+
+pool:
+  vmImage: "ubuntu-latest"
+
+steps:
+  - script: |
+      python -m pip install -r requirements.txt
+    displayName: "Install dependencies"
+
+  - script: |
+      python -m pytest
+    displayName: "Run tests"
+
+  - task: SonarCloudPrepare@1
+    inputs:
+      SonarCloud: "SonarCloud"
+      organization: "MyOrganization"
+      scanRepository: true
+
+  - task: SonarCloudAnalyze@1
+    inputs:
+      SonarCloud: "SonarCloud"
+
+  - task: SonarCloudPublish@1
+    inputs:
+      SonarCloud: "SonarCloud"
+
+  - script: |
+      docker build -t myuser/myapp:latest .
+    displayName: "Build image"
+
+  - task: Docker@2
+    inputs:
+      command: push
+      containerRegistry: "DockerHub"
+      repository: "myuser/myapp"
+      tags: "latest"
+
+  - script: |
+      kubectl apply -f deployment.yaml
+      kubectl apply -f service.yaml
+    displayName: "Deploy to Kubernetes"

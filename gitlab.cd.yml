@@ -1,0 +1,18 @@
+image: python:3.9
+
+variables:
+  KUBE_CONFIG_DATA: ${KUBE_CONFIG_DATA}
+
+before_script:
+  - python -m pip install -r requirements.txt
+
+deploy:
+  script:
+    - echo "$KUBE_CONFIG_DATA" | base64 -d > kube_config
+    - export KUBECONFIG=./kube_config
+    - kubectl apply -f deployment.yaml
+    - kubectl apply -f service.yaml
+  environment:
+    name: production
+  only:
+    - master

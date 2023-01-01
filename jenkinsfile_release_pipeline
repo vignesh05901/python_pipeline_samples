@@ -1,0 +1,20 @@
+pipeline {
+    agent any
+    stages {
+        stage('Pull image from Docker Hub') {
+            steps {
+                sh 'docker pull myuser/myapp:latest'
+            }
+        }
+        stage('Create Kubernetes deployment') {
+            steps {
+                sh 'kubectl apply -f deployment.yaml'
+            }
+        }
+        stage('Create Kubernetes service') {
+            steps {
+                sh 'kubectl apply -f service.yaml'
+            }
+        }
+    }
+}
