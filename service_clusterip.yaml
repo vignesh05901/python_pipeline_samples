@@ -1,0 +1,13 @@
+# service1.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1-service
+spec:
+  type: ClusterIP
+  selector:
+    app: service1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

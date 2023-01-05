@@ -9,5 +9,9 @@ def index():
         return render_template('echo.html', user_input=user_input)
     return render_template('index.html')
 
+@app.route('/greet')
+def greet():
+    return 'Hello, World!'
+
 if __name__ == '__main__':
     app.run()
